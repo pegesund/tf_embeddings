@@ -16,7 +16,7 @@
 	 (l2-norm (numcl:sqrt (numcl:sum (numcl:* numarr numarr))))
 	 (norm-arr
 	   (if (> l2-norm 0)
-	       (numcl:* numarr (numcl:/ 1 l2-norm))
+	       (numcl:/ numarr l2-norm)
 	       numarr))
 	 )
     ; (print word)
@@ -35,7 +35,6 @@
 	      do (progn (when (> i 1) (handle-fline line))
 			(cl-progress-bar:update 1)
 			(incf i)
-					; (when (= 0 (mod i 1000)) (print i))
 			)))
       (close x)))
   (print "Now storing vectors in file")
@@ -45,5 +44,20 @@
 
 (defun euclid-distance (v1 v2)
   (let ((diff (numcl:- v1 v2)))
-	 (numcl:sum (numcl:* diff diff))))
+    (numcl:sum (numcl:* diff diff))))
+
+(defun find-closest-word(v1 vectors)
+  (let ((best-diff 2) (best-word nil) (i 0))
+    (loop for k being each hash-key of vectors
+	  do (let* ((v2 (gethash k vectors))
+		    (diff (euclid-distance v1 v2)))
+	       (incf i)
+	       (when (= 0 (mod i 10000))
+		 (print i))
+	       (when (and (> diff 0) (< diff best-diff))
+		 (print (format nil "~a - ~a" diff k))
+		 (setq best-diff diff)
+		 (setq best-word k))))
+    best-word
+    ))
 	
