@@ -45,5 +45,7 @@
 
 (defun euclid-distance (v1 v2)
   (let ((diff (numcl:- v1 v2)))
-	 (numcl:sum (numcl:* diff diff))))
+    (numcl:sum (numcl:* diff diff))))
+
+
 	
