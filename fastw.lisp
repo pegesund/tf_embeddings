@@ -58,8 +58,6 @@
 	  do (let* ((v2 (gethash k vectors))
 		    (diff (euclid-distance v1 v2)))
 	       (incf i)
-	       ; (when (= 0 (mod i 10000))
-		; (print i))
 	       (when (and (> diff 0) (< diff best-diff))
 		 (print (format nil "~a - ~a" diff k))
 		 (setq best-diff diff)
@@ -78,8 +76,24 @@
   
 (defun testme()
   (let ((x1 (gethash "kake" *fast-vectors*)))
-    (euclid-distance x1 x1)))
+    (mgl-mat:m+ x1 x1)))
 
 (defun find-closest-word (word hash)
   (let ((w (gethash word hash)))
     (find-closest-vector w hash)))
+
+(defun word-vectors(sentence hash)
+  (let* ((words (str:words (sb-unicode:lowercase sentence)))
+	 (vectors (loop for w in words when (gethash w hash) collect (list w (gethash w hash)))))
+    vectors))
+
+(defun document-vector(sentence hash &optional (size 300))
+  "Find average document vector, based on each term"
+  (let* ((vectors (word-vectors sentence hash))
+	 (vectors-only (mapcar #'second vectors))
+	 (vector-sum (reduce #'(lambda (a b) (mgl-mat:m+ a b)) vectors-only))
+	 (div-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (/ 1 (length vectors-only))))
+	 )
+    (mgl-mat:.*! vector-sum div-vec)
+    div-vec))
+	
