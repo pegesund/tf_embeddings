@@ -87,13 +87,20 @@
 	 (vectors (loop for w in words when (gethash w hash) collect (list w (gethash w hash)))))
     vectors))
 
+(defun div-vector(v d &optional (size 300))
+  "Divides vector by d ration, helper"
+  (let ((div-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (/ 1 d))))
+    (mgl-mat:.*! v div-vec)
+    div-vec))
+
+(defun sum-vectors(vs)
+   (reduce #'(lambda (a b) (mgl-mat:m+ a b)) vs))
+
 (defun document-vector(sentence hash &optional (size 300))
   "Find average document vector, based on each term"
   (let* ((vectors (word-vectors sentence hash))
 	 (vectors-only (mapcar #'second vectors))
-	 (vector-sum (reduce #'(lambda (a b) (mgl-mat:m+ a b)) vectors-only))
-	 (div-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (/ 1 (length vectors-only))))
+	 (vector-sum (sum-vectors vectors-only))
 	 )
-    (mgl-mat:.*! vector-sum div-vec)
-    div-vec))
+    (div-vector vector-sum (length vectors-only) size)))
 	
