@@ -1,5 +1,6 @@
 ;;;; fastw.lisp
 
+
 (in-package #:fastw)
 
 (defvar fast-vector-file "/home/petter/Nedlastinger/cc.no.300.vec")
@@ -59,5 +60,14 @@
 		 (setq best-diff diff)
 		 (setq best-word k))))
     best-word
-    ))
-	
+    ()))
+
+
+(defun restore-vector(filename)
+  (setf *fast-vectors* (cl-store:restore filename))
+  (loop for k being each hash-key of *fast-vectors*
+	do (let* ((numbers (gethash k *fast-vectors*))
+		  (dim (list 1 (length numbers)))
+		  (mnumbers (mgl-mat:make-mat dim :ctype :float :initial-contents (list numbers))))
+	     (setf (gethash k *fast-vectors*) mnumbers))))
+  
