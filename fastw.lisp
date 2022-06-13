@@ -43,18 +43,23 @@
   (print "Done storing")
   )
 
-(defun euclid-distance (v1 v2)
+(defun euclid-distance-old (v1 v2)
   (let ((diff (numcl:- v1 v2)))
     (numcl:sum (numcl:* diff diff))))
 
-(defun find-closest-word(v1 vectors)
+(defun euclid-distance (v1 v2)
+  (let ((diff (mgl-mat:M- v1 v2)))
+    (mgl-mat:.*! diff diff)
+    (mgl-mat:asum diff)))
+
+(defun find-closest-vector(v1 vectors)
   (let ((best-diff 2) (best-word nil) (i 0))
     (loop for k being each hash-key of vectors
 	  do (let* ((v2 (gethash k vectors))
 		    (diff (euclid-distance v1 v2)))
 	       (incf i)
-	       (when (= 0 (mod i 10000))
-		 (print i))
+	       ; (when (= 0 (mod i 10000))
+		; (print i))
 	       (when (and (> diff 0) (< diff best-diff))
 		 (print (format nil "~a - ~a" diff k))
 		 (setq best-diff diff)
@@ -71,3 +76,10 @@
 		  (mnumbers (mgl-mat:make-mat dim :ctype :float :initial-contents (list numbers))))
 	     (setf (gethash k *fast-vectors*) mnumbers))))
   
+(defun testme()
+  (let ((x1 (gethash "kake" *fast-vectors*)))
+    (euclid-distance x1 x1)))
+
+(defun find-closest-word (word hash)
+  (let ((w (gethash word hash)))
+    (find-closest-vector w hash)))
