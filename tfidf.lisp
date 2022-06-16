@@ -1,15 +1,9 @@
 (in-package #:fastw)
 
-;; helper - so lacking in lisp..
-
-(defun filter (f list)
-   (cond
-    ((not list)                   ;; the list is empty
-     nil)
-    ((funcall f (first list))     ;; the first element satisfies the test
-     (cons (first list) (filter f (rest list))))
-    (t                            ;; otherwise ...
-     (filter f (rest list)))))
+(defun printem (&rest args)
+  (format t "~{~a~^ ~}" args)
+  (print "")
+  )
 
 
 ;; this package simply buids up the *word-freq*
@@ -32,7 +26,21 @@
 	 (words (loop for w in words-raw when (every #'alpha-char-p w) collect w)))
     (loop for word in words do
       (incf (word-total h))
-      (setf (gethash word (word-freq h)) (+ 1 (or (gethash word (word-freq h)) 0))))))
+      (incf (gethash word (word-freq h) 0)))
+    (when (>= (hash-table-count (word-freq h)) 400000)
+      (let* ((old-size  (hash-table-count (word-freq h)))
+	     (vals (alexandria:hash-table-values (word-freq h)))
+	     (sorted-vals (sort vals #'<))
+	     (i (round (/ (length sorted-vals) 2)))
+	     (median-value (nth i sorted-vals))
+	     (all-words (alexandria:hash-table-keys (word-freq h)))
+	     (to-small (loop for w in all-words when (<= (gethash w (word-freq h)) median-value) collect w)))
+	(printem "Deleting words: " (length to-small))
+	(loop for w in to-small do (remhash w (word-freq h)))
+	(printem "New hash size: " (hash-table-count (word-freq h)) " Old hash size: " old-size)))))
+	
+
+
 	
 
 
