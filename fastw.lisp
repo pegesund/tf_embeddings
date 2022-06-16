@@ -87,6 +87,7 @@
 	 (vectors (loop for w in words when (gethash w hash) collect (list w (gethash w hash)))))
     vectors))
 
+(declaim (inline div-vector))
 (defun div-vector(v d &optional (size 300))
   "Divides vector by d ration, helper"
   (let ((div-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (/ 1 d))))
@@ -94,13 +95,13 @@
     div-vec))
 
 (defun sum-vectors(vs)
+  "Sums a list of vectors, helper"
    (reduce #'(lambda (a b) (mgl-mat:m+ a b)) vs))
 
-(defun document-vector(sentence hash &optional (size 300))
+(defun average-document-vector(sentence hash &optional (size 300))
   "Find average document vector, based on each term"
   (let* ((vectors (word-vectors sentence hash))
 	 (vectors-only (mapcar #'second vectors))
 	 (vector-sum (sum-vectors vectors-only))
 	 )
     (div-vector vector-sum (length vectors-only) size)))
-	
