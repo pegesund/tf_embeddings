@@ -67,6 +67,7 @@
 
 
 (defun restore-vector(filename)
+  "Read vectors into global"
   (setf *fast-vectors* (cl-store:restore filename))
   (loop for k being each hash-key of *fast-vectors*
 	do (let* ((numbers (gethash k *fast-vectors*))
@@ -105,3 +106,4 @@
 	 (vector-sum (sum-vectors vectors-only))
 	 )
     (div-vector vector-sum (length vectors-only) size)))
+

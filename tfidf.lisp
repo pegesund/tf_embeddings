@@ -18,7 +18,9 @@
     :initarg :word-total
     :accessor word-total
     :initform 0
-    )))
+    ))
+  (:documentation "Simple word count in a word - number structure, the word-total just keeps the total numbers")
+  )
 
 
 (defmethod add-string (h s)
@@ -27,7 +29,7 @@
     (loop for word in words do
       (incf (word-total h))
       (incf (gethash word (word-freq h) 0)))
-    (when (>= (hash-table-count (word-freq h)) 400000)
+    (when (>= (hash-table-count (word-freq h)) 400000) ; change for max words before throwing away the seldom ones
       (let* ((old-size  (hash-table-count (word-freq h)))
 	     (vals (alexandria:hash-table-values (word-freq h)))
 	     (sorted-vals (sort vals #'<))
@@ -40,11 +42,36 @@
 	(printem "New hash size: " (hash-table-count (word-freq h)) " Old hash size: " old-size)))))
 	
 
+(defmethod save-tf (h file-name)
+  (cl-store:store h file-name))
 
-	
+(defmethod load-tf (file-name)
+  (cl-store:restore file-name))
 
+
+(defun occurrences (lst)
+  (let ((table (make-hash-table :test 'equal)))       
+    (loop for e in lst
+          do (incf (gethash e table 0)))
+    table))
+
+(defmethod tf-idf (h sentence)
+  (loop
+    with words = (str:words sentence)
+    with occurence-hash = (occurrences words)
+    with doc-count = (length words)
+    for word in words
+    collect (let* ((tf (/ (gethash word occurence-hash) doc-count))
+		   (idf (log (/ (word-total h) (gethash word (word-freq h) 1)))))
+		   (* tf idf))))
+		       
+
+
+	       
 
 ;; code below just builds the word counter above, can be replaced with any of you own code
+;; it is based on open corpus
+
 
 (defun text-from-xml(node)
   (cond ((typep node 'xmls:node)
@@ -57,7 +84,7 @@
                (archive:with-open-archive
                    (archive stream :direction :input)
                  (archive:do-archive-entries (entry archive)
-		   (print  (format nil "~A" entry))
+		   ; (print  (format nil "~A" entry))
 		   (let* ((content (alexandria:read-stream-content-into-string (flexi-streams:make-flexi-stream
 										(archive:entry-stream entry))))
 			  (content-str (cond ((str:ends-with? "xml>" (format nil "~A" entry))
@@ -84,7 +111,31 @@
 
 (defun create-freq()
   (let ((tf (make-instance 'tfidf)))
-    (create-freq-tar tf)
     (create-freq-txt tf)
+    (create-freq-tar tf)
     tf
   ))
+
+;;
+;; Here we read in the domain specific data
+;; In this case we this is job ads, which is kept in a json file
+;;
+
+(defun read-domain-data (&optional (dir #P"/home/petter/dev/python/jobs.json"))
+  (let  ((tf (make-instance 'tfidf)))
+    (loop for job in  (cl-json:decode-json-from-source dir) do
+      (let ((html (cdr (assoc :job-description job))))
+	(when (stringp html)
+	  (add-string tf (plump:text (plump:parse html))))))
+	tf))
+
+;;
+;; tf-idf calculation
+;;
+
+
+
+
+
+
+	 
