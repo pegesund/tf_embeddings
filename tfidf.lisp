@@ -56,6 +56,7 @@
     table))
 
 (defmethod tf-idf (h sentence)
+  "Not a canonical tf-idf as the tf is simply occurences of words and words total"
   (loop
     with words = (str:words sentence)
     with occurence-hash = (occurrences words)
@@ -66,6 +67,13 @@
 		   (* tf idf))))
 		       
 
+(defun combined-tf-idf (sentence large-h small-h &optional (weight-to-small 1))
+  "Combine tf-idf from two idf-counters, it is possible to weight the small one higher by weight"
+  (let* ((small (tf-idf small-h sentence))
+	 (large (tf-idf large-h sentence))
+	 (pairs (mapcar #'cons small large)))
+    (mapcar (lambda (v)
+	      (/ (+ (cdr v) (* (car v) weight-to-small)) (+ 1 weight-to-small))) pairs)))
 
 	       
 

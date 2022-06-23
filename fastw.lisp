@@ -103,7 +103,21 @@
   "Find average document vector, based on each term"
   (let* ((vectors (word-vectors sentence hash))
 	 (vectors-only (mapcar #'second vectors))
-	 (vector-sum (sum-vectors vectors-only))
-	 )
+	 (vector-sum (sum-vectors vectors-only)))
     (div-vector vector-sum (length vectors-only) size)))
+
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (size 300))
+   (let* ((vectors (word-vectors sentence hash))
+	  (vectors-only (mapcar #'second vectors))
+	  (tf-idfs (combined-tf-idf sentence tf-large tf-small weight))
+	  (tf-vectors (loop for tf-idf in tf-idfs
+			    for v in vectors-only
+			    collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element tf-idf)))
+				      (mgl-mat:.*! v mul-vec)
+				      mul-vec))))
+	  (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
+
+
+
+
 
