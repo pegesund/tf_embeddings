@@ -52,8 +52,9 @@
     (mgl-mat:.*! diff diff)
     (mgl-mat:asum diff)))
 
+
 (defun find-closest-vector(v1 vectors)
-  (let ((best-diff 2) (best-word nil) (i 0))
+  (let ((best-diff sb-kernel:most-positive-exactly-single-float-fixnum) (best-word nil) (i 0))
     (loop for k being each hash-key of vectors
 	  do (let* ((v2 (gethash k vectors))
 		    (diff (euclid-distance v1 v2)))
@@ -65,6 +66,19 @@
     best-word
     ()))
 
+
+(defun find-closest-vector2(v1 vectors)
+  (let ((best-diff sb-kernel:most-positive-exactly-single-float-fixnum) (best-word nil) (i 0))
+    (loop for k being each hash-key of vectors
+	  do (let* ((v2 (gethash k vectors))
+		    (diff (- 1 (mgl-mat:dot v1 v2))))
+	       (incf i)
+	       (when (and (> diff 0) (< diff best-diff))
+		 (print (format nil "~a - ~a" diff k))
+		 (setq best-diff diff)
+		 (setq best-word k))))
+    best-word
+    ()))
 
 (defun restore-vector(filename)
   "Read vectors into global"
@@ -106,17 +120,18 @@
 	 (vector-sum (sum-vectors vectors-only)))
     (div-vector vector-sum (length vectors-only) size)))
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (size 300))
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight 1) (size 300))
    (let* ((vectors (word-vectors sentence hash))
 	  (vectors-only (mapcar #'second vectors))
 	  (tf-idfs (combined-tf-idf sentence tf-large tf-small weight))
 	  (tf-vectors (loop for tf-idf in tf-idfs
 			    for v in vectors-only
-			    collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element tf-idf)))
+			    collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (expt tf-idf tf-weight))))
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
-	  (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
-
+					; (div-vector (sum-vectors tf-vectors) (apply #'+ tf-idfs) size)))
+     (print tf-idfs)
+     (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
 
 
 

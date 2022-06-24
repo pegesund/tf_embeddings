@@ -61,8 +61,9 @@
     with words = (str:words sentence)
     with occurence-hash = (occurrences words)
     with doc-count = (length words)
+    with tf-sentence-weight = 0.3    
     for word in words
-    collect (let* ((tf (/ (gethash word occurence-hash) doc-count))
+    collect (let* ((tf (/ (* tf-sentence-weight (gethash word occurence-hash) doc-count)))
 		   (idf (log (/ (word-total h) (gethash word (word-freq h) 1)))))
 		   (* tf idf))))
 		       
