@@ -61,7 +61,7 @@
     with words = (str:words sentence)
     with occurence-hash = (occurrences words)
     with doc-count = (length words)
-    with freq-modifier = 0.7
+    with freq-modifier = 0.2
     for word in words
     collect (let* ((tf (/ (expt (gethash word occurence-hash) freq-modifier) doc-count))
 		   (idf (log (/ (word-total h) (gethash word (word-freq h) 1)))))

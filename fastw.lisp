@@ -135,4 +135,19 @@
 
 
 
+(defun find-closest-n(v1 vectors n)
+  "Use like this:  (find-closest-n (tf-document-vector 'denne handler om javascript jeg bor i bergen på vestlandet' *fast-vectors* large-tf small-tf 0.2 2) *fast-vectors* 10 )"
+  (let ((i 0)
+	(heap (make-instance 'cl-heap:binary-heap :sort-fun #'(lambda (a b) (> (cdr a) (cdr b)))))
+	)
+    (loop for k being each hash-key of vectors
+	  do (let* ((v2 (gethash k vectors))
+		    (diff (euclid-distance v1 v2)))
+	       (incf i)
+	       (when (or (<= (cl-heap:heap-size heap) n) (<= diff (cl-heap:peep-at-heap heap)))
+		 (cl-heap:add-to-heap heap (cons k diff))
+		 (when (>= (cl-heap:heap-size heap) n)
+		   (cl-heap:pop-heap heap)))))
+    (loop while (> (cl-heap:heap-size heap) 0)
+	  do (print (format nil "~a" (cl-heap:pop-heap heap))))))
 
