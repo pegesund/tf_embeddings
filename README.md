@@ -1,9 +1,10 @@
 # fastw
-### _Your Name <your.name@example.com>_
+### petter.egesund@gmail.com 
 
-This is a project to do ... something.
+Testing out frequencey adjusted word embeddings based on Fasttext.
 
 ## License
 
-Specify license here
+Omg (Oh my god) license!
 
+This means that you freely can use the software if you message this acronym to the author.
