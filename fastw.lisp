@@ -129,16 +129,17 @@
 	 (words-no-dup (remove-duplicates words :test #'equal)) 
 	 (vectors (word-vectors-from-words words-no-dup hash))
 	 (vectors-only (mapcar #'second vectors))
+	 (total 0)
 	 (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
 	 (tf-vectors (loop for tf-idf in tf-idfs
 			   for v in vectors-only
 			   for w in words-no-dup
-			   do (print (format nil " ~a - ~a - ~a" w tf-idf (expt (+ 1 tf-idf) tf-weight)))
-			   collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (expt (+ 1 tf-idf) tf-weight))))
+			   collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
+					  (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
+				     (incf total vector-scale)
 				     (mgl-mat:.*! v mul-vec)
 				     mul-vec))))
-    ; (print (format nil "Length: ~a - ~a: " (length words-no-dup) (length vectors)))
-    (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
+    (div-vector (sum-vectors tf-vectors) total size)))
 
 
 
@@ -157,4 +158,11 @@
 		   (cl-heap:pop-heap heap)))))
     (loop while (> (cl-heap:heap-size heap) 0)
 	  do (print (format nil "~a" (cl-heap:pop-heap heap))))))
+
+
+;;; examples
+
+; (find-closest-n (tf-document-vector "Det finnes ingen standardisert definisjon av begrepet hetebølge som brukes felles av alle land. Det kommer blant annet av at det som oppleves som unormale temperaturer i ett område, kan være normale temperaturer i et annet område. I tillegg er det mange ulike kriterier som kan legges til grunn for å definere en hetebølge. Blant annet valg av minimumslengde på antall dager med varme, hvilken eller hvilke temperaturmålinger som brukes (døgn-gjennomsnitt, døgn-minimum eller døgn-maksimum), og om luftfuktighet også tas med i beregningen. Både opplevd varme og faktiske konsekvenser av høy temperatur vil avhenge av hvor man befinner seg. Det betyr at definisjonen man velger i hvert enkelt land, er fastsatt etter hva som er målet med å formidle hetebølgene i områdene landet dekker." *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
+
+; (find-closest-n (tf-document-vector "Jeg er flink i javascript og kan mye om frontend. Jeg er utdannet i Bergen på Vestlandet" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
 
