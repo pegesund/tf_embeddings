@@ -60,7 +60,7 @@
 		    (diff (euclid-distance v1 v2)))
 	       (incf i)
 	       (when (and (> diff 0) (< diff best-diff))
-		 (print (format nil "~a - ~a" diff k))
+		 ; (print (format nil "~a - ~a" diff k))
 		 (setq best-diff diff)
 		 (setq best-word k))))
     best-word
@@ -74,7 +74,7 @@
 		    (diff (- 1 (mgl-mat:dot v1 v2))))
 	       (incf i)
 	       (when (and (> diff 0) (< diff best-diff))
-		 (print (format nil "~a - ~a" diff k))
+		 ; (print (format nil "~a - ~a" diff k))
 		 (setq best-diff diff)
 		 (setq best-word k))))
     best-word
@@ -98,9 +98,12 @@
     (find-closest-vector w hash)))
 
 (defun word-vectors(sentence hash)
-  (let* ((words (str:words (sb-unicode:lowercase sentence)))
+  (let* ((words (remove-duplicates (str:words (sb-unicode:lowercase sentence)) :test #'equal))
 	 (vectors (loop for w in words when (gethash w hash) collect (list w (gethash w hash)))))
     vectors))
+
+(defun word-vectors-from-words(words hash)
+   (loop for w in words collect (list w (gethash w hash))))
 
 (declaim (inline div-vector))
 (defun div-vector(v d &optional (size 300))
@@ -121,17 +124,22 @@
     (div-vector vector-sum (length vectors-only) size)))
 
 (defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight 1) (size 300))
-   (let* ((vectors (word-vectors sentence hash))
-	  (vectors-only (mapcar #'second vectors))
-	  (tf-idfs (combined-tf-idf sentence tf-large tf-small weight))
-	  (tf-vectors (loop for tf-idf in tf-idfs
-			    for v in vectors-only
-			    collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (expt tf-idf tf-weight))))
-				      (mgl-mat:.*! v mul-vec)
-				      mul-vec))))
+  (let* ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
+	 (words (loop for w in words-all when (gethash w hash) collect w))
+	 (words-no-dup (remove-duplicates words :test #'equal)) 
+	 (vectors (word-vectors-from-words words-no-dup hash))
+	 (vectors-only (mapcar #'second vectors))
+	 (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
+	 (tf-vectors (loop for tf-idf in tf-idfs
+			   for v in vectors-only
+			   for w in words-no-dup
+			   do (print (format nil " ~a - ~a - ~a" w tf-idf (expt tf-idf tf-weight)))
+			   collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (expt (+ 1 tf-idf) tf-weight))))
+				     (mgl-mat:.*! v mul-vec)
+				     mul-vec))))
 					; (div-vector (sum-vectors tf-vectors) (apply #'+ tf-idfs) size)))
-     (print tf-idfs)
-     (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
+    (print (format nil "Length: ~a - ~a: " (length words-no-dup) (length vectors)))
+    (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
 
 
 

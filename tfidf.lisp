@@ -55,28 +55,41 @@
           do (incf (gethash e table 0)))
     table))
 
-(defmethod tf-idf (h sentence)
+(defmethod tf-idfs (h words occurence-hash)
   "Not a canonical tf-idf as the tf is simply occurences of words and words total"
-  (loop
-    with words = (str:words sentence)
-    with occurence-hash = (occurrences words)
-    with doc-count = (length words)
-    with freq-modifier = 0.2
-    for word in words
-    collect (let* ((tf (/ (expt (gethash word occurence-hash) freq-modifier) doc-count))
-		   (idf (log (/ (word-total h) (gethash word (word-freq h) 1)))))
-		   (* tf idf))))
+  (let ((res (make-hash-table :test 'equal)))
+    (loop
+      with doc-count = (apply #'+ (alexandria:hash-table-values occurence-hash))
+      with freq-modifier = 1
+      for word in words
+      do (let* ((tf (/ (expt (gethash word occurence-hash) freq-modifier) doc-count))
+		(in-total-doc  (gethash word (word-freq h) 1))
+		(idf (log (/ (word-total h) in-total-doc)))
+		(computed-tfidf (* tf idf)))
+	   (setf (gethash word res) computed-tfidf)))
+    res))
+	 
 		       
 
-(defun combined-tf-idf (sentence large-h small-h &optional (weight-to-small 1))
+(defun combined-tf-idfs (words-all words-no-dups large-h small-h &optional (weight-to-small 1))
   "Combine tf-idf from two idf-counters, it is possible to weight the small one higher by weight"
-  (let* ((small (tf-idf small-h sentence))
-	 (large (tf-idf large-h sentence))
-	 (pairs (mapcar #'cons small large)))
-    (mapcar (lambda (v)
-	      (/ (+ (cdr v) (* (car v) weight-to-small)) (+ 1 weight-to-small))) pairs)))
-
-	       
+  (let* ((occurence-hash (occurrences words-all))
+	 (small (tf-idfs small-h words-all occurence-hash))
+	 (large (tf-idfs large-h words-all occurence-hash)))
+    (loop for w in words-no-dups
+	  collect (/ (+ (* (+ 1 weight-to-small) (gethash w small)) (gethash w large)) 2))))
+		   
+	      
+(defun debug-tf (sentence large-h small-h &optional (weight-to-small 1))
+  (let* ((words (str:words sentence))
+	 (tf-idfs (combined-tf-idf sentence large-h small-h weight-to-small))
+	 (both (loop for w in words
+		     for tf in tf-idfs
+		     collect (cons w tf)))
+	 (boths (sort both #'>  :key #'cdr)))
+    (loop for i in boths do (print (format nil "~A" i)))
+    (str:join " "(loop repeat 15 for i in boths collect (car i)))))
+	
 
 ;; code below just builds the word counter above, can be replaced with any of you own code
 ;; it is based on open corpus
