@@ -60,13 +60,14 @@
   (let ((res (make-hash-table :test 'equal)))
     (loop
       with doc-count = (apply #'+ (alexandria:hash-table-values occurence-hash))
-      with freq-modifier = 1
       for word in words
-      do (let* ((tf (/ (expt (gethash word occurence-hash) freq-modifier) doc-count))
-		(in-total-doc  (gethash word (word-freq h) 1))
-		(idf (log (/ (word-total h) in-total-doc)))
+      do (let* ((tf (/ (expt (gethash word occurence-hash) 1) doc-count))
+		(in-total-doc (expt (gethash word (word-freq h) 1) 1))
+		(idf (expt (/ (word-total h) (expt in-total-doc 1)) 0.4))
 		(computed-tfidf (* tf idf)))
+	   (print (format nil "~a - ~f - ~f" word tf (/ (word-total h) in-total-doc)))
 	   (setf (gethash word res) computed-tfidf)))
+    (print (format nil "------- Res: ~a" res))
     res))
 	 
 		       

@@ -133,12 +133,11 @@
 	 (tf-vectors (loop for tf-idf in tf-idfs
 			   for v in vectors-only
 			   for w in words-no-dup
-			   do (print (format nil " ~a - ~a - ~a" w tf-idf (expt tf-idf tf-weight)))
+			   do (print (format nil " ~a - ~a - ~a" w tf-idf (expt (+ 1 tf-idf) tf-weight)))
 			   collect (let ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element (expt (+ 1 tf-idf) tf-weight))))
 				     (mgl-mat:.*! v mul-vec)
 				     mul-vec))))
-					; (div-vector (sum-vectors tf-vectors) (apply #'+ tf-idfs) size)))
-    (print (format nil "Length: ~a - ~a: " (length words-no-dup) (length vectors)))
+    ; (print (format nil "Length: ~a - ~a: " (length words-no-dup) (length vectors)))
     (div-vector (sum-vectors tf-vectors) (length tf-idfs) size)))
 
 
