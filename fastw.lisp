@@ -123,8 +123,11 @@
 	 (vector-sum (sum-vectors vectors-only)))
     (div-vector vector-sum (length vectors-only) size)))
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight 1) (size 300))
-  (let* ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300))
+  (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
+	  (tf-weight (if (> tf-weight-p 0)
+			 tf-weight-p
+			 (max 1 (min 3 (* 0.02 (length words-all))))))
 	 (words (loop for w in words-all when (gethash w hash) collect w))
 	 (words-no-dup (remove-duplicates words :test #'equal)) 
 	 (vectors (word-vectors-from-words words-no-dup hash))
