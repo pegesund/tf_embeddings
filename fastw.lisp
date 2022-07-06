@@ -127,21 +127,22 @@
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
-			 (max 1 (min 3 (* 0.02 (length words-all))))))
-	 (words (loop for w in words-all when (gethash w hash) collect w))
-	 (words-no-dup (remove-duplicates words :test #'equal)) 
-	 (vectors (word-vectors-from-words words-no-dup hash))
-	 (vectors-only (mapcar #'second vectors))
-	 (total 0)
-	 (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
-	 (tf-vectors (loop for tf-idf in tf-idfs
-			   for v in vectors-only
-			   for w in words-no-dup
-			   collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
-					  (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
-				     (incf total vector-scale)
-				     (mgl-mat:.*! v mul-vec)
-				     mul-vec))))
+			 (+ 1 (max 1 (min 4 (* 0.03 (length words-all)))))))
+	  (words (loop for w in words-all when (gethash w hash) collect w))
+	  (words-no-dup (remove-duplicates words :test #'equal)) 
+	  (vectors (word-vectors-from-words words-no-dup hash))
+	  (vectors-only (mapcar #'second vectors))
+	  (total 0)
+	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
+	  (tf-vectors (loop for tf-idf in tf-idfs
+			    for v in vectors-only
+			    for w in words-no-dup
+			    collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
+					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
+				      (incf total vector-scale)
+				      (mgl-mat:.*! v mul-vec)
+				      mul-vec))))
+    (print (format nil "Weight: ~a" tf-weight))
     (div-vector (sum-vectors tf-vectors) total size)))
 
 
@@ -169,3 +170,4 @@
 
 ; (find-closest-n (tf-document-vector "Jeg er flink i javascript og kan mye om frontend. Jeg er utdannet i Bergen på Vestlandet" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
 
+; (find-closest-n (tf-document-vector "Jeg har jobbet som konditor og er flink til å bake kaker, kjeks og annet bakverk. På grunn av mitt finske opphav snakker jeg også finsk" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
