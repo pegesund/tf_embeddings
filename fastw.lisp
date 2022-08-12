@@ -6,6 +6,8 @@
 (defvar fast-vector-file "/home/petter/Nedlastinger/cc.no.300.vec")
 
 (defvar *fast-vectors* nil)
+(defvar large-tf nil)
+(defvar small-tf nil)
 (defparameter *max-vectors* 500000)
 
 (defun handle-fline (line)
@@ -163,6 +165,12 @@
     (loop while (> (cl-heap:heap-size heap) 0)
 	  do (print (format nil "~a" (cl-heap:pop-heap heap))))))
 
+
+(defun runme()
+  (setf large-tf (load-tf "/data/lisp/large_tf.txt"))
+  (setf small-tf (load-tf "/data/lisp/small_tf.txt"))
+  (restore-vector "/data/lisp/vectors.txt")
+  )
 
 ;;; examples
 
