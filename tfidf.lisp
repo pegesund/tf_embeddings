@@ -65,9 +65,9 @@
 		(in-total-doc (gethash word (word-freq h) 1))
 		(idf (expt (/ (word-total h) in-total-doc) 0.4))
 		(computed-tfidf (* tf idf)))
-	   (print (format nil "~a - ~f - ~f" word tf (/ (word-total h) in-total-doc)))
+	   ; (print (format nil "~a - ~f - ~f" word tf (/ (word-total h) in-total-doc)))
 	   (setf (gethash word res) computed-tfidf)))
-    (print (format nil "------- Res: ~a" res))
+    ; (print (format nil "------- Res: ~a" res))
     res))
 	 
 		       

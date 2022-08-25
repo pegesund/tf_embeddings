@@ -144,7 +144,7 @@
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
-    (print (format nil "Weight: ~a" tf-weight))
+    ; (print (format nil "Weight: ~a" tf-weight))
     (div-vector (sum-vectors tf-vectors) total size)))
 
 
@@ -172,6 +172,13 @@
   (restore-vector "/data/lisp/vectors.txt")
   )
 
+(defun parse-file(f)  
+  (with-open-file (file f)
+    (loop for i from 0
+        for line = (read-line file nil nil)
+        while line
+        do (tf-document-vector line *fast-vectors* large-tf small-tf 0.2 3))))
+  
 ;;; examples
 
 ; (find-closest-n (tf-document-vector "Det finnes ingen standardisert definisjon av begrepet hetebølge som brukes felles av alle land. Det kommer blant annet av at det som oppleves som unormale temperaturer i ett område, kan være normale temperaturer i et annet område. I tillegg er det mange ulike kriterier som kan legges til grunn for å definere en hetebølge. Blant annet valg av minimumslengde på antall dager med varme, hvilken eller hvilke temperaturmålinger som brukes (døgn-gjennomsnitt, døgn-minimum eller døgn-maksimum), og om luftfuktighet også tas med i beregningen. Både opplevd varme og faktiske konsekvenser av høy temperatur vil avhenge av hvor man befinner seg. Det betyr at definisjonen man velger i hvert enkelt land, er fastsatt etter hva som er målet med å formidle hetebølgene i områdene landet dekker." *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
