@@ -127,26 +127,50 @@
 	 (vector-sum (sum-vectors vectors-only)))
     (div-vector vector-sum (length vectors-only) size)))
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300))
+
+
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 7))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
 			 (+ 1 (max 1 (min 4 (* 0.03 (length words-all)))))))
 	  (words (loop for w in words-all when (gethash w hash) collect w))
-	  (words-no-dup (remove-duplicates words :test #'equal)) 
+	  (words-no-dup (remove-if-not #'(lambda (x) (lookup tf-large x))   (remove-duplicates words :test #'equal)))
+	  (topnn (min topn (length words-no-dup))) 
 	  (vectors (word-vectors-from-words words-no-dup hash))
 	  (vectors-only (mapcar #'second vectors))
 	  (total 0)
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
+	  (sorted-tf-and-vecs (subseq (sort (mapcar #'list tf-idfs vectors) #'>  :key #'car) 0 topnn))
+	  (average-topscore (/ (reduce #'+ (mapcar #'car sorted-tf-and-vecs)) topn))
+	  (average-topvector (div-vector
+			      (sum-vectors (mapcar #'(lambda (x) (cadr (cadr x))) sorted-tf-and-vecs))
+			      topnn
+			      size
+			      ))
+	  (distance-to-center (mapcar #'(lambda (x) (cons
+		(caadr x)
+		(expt (+ 1 (euclid-distance average-topvector (cadr (cadr x)))) 20)
+		))
+				      sorted-tf-and-vecs))
+	  (min-distance-to-center (reduce #'min distance-to-center  :key #'cdr))
+	  (adjust-score (mapcar #'(lambda (x) (cons (car x) (/ (cdr x) min-distance-to-center))) distance-to-center))
 	  (tf-vectors (loop for tf-idf in tf-idfs
 			    for v in vectors-only
 			    for w in words-no-dup
-			    collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
+			    ; do (print (format nil "Weight: ~a ~a" w tf-idf))
+			    collect (let* ((tf-adjusted  (/ tf-idf
+					(cdr (or (assoc w adjust-score :test #'string-equal) (cons 1 1)))))
+					   (vector-scale (expt (+ 1 tf-adjusted) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
-    ; (print (format nil "Weight: ~a" tf-weight))
+					; (print (format nil "Weight: ~a" tf-idfs))
+    ; (print sorted-tf-and-vecs)
+    ; (print average-topscore)
+    ; (print distance-to-center)
+    ; (print adjust-score)
     (div-vector (sum-vectors tf-vectors) total size)))
 
 
@@ -189,8 +213,8 @@
 	  do (let* ((wvector (tf-document-vector line *fast-vectors* large-tf small-tf 0.2 3))
 		    
 		    (key line))
-	       (when (> (length key) 50)
-		 (setf (gethash (subseq key 0 40) *job-vectors*) wvector)))))) 			   
+	       (when (> (length key) 71)
+		 (setf (gethash (subseq key 0 70) *job-vectors*) wvector)))))) 			   
   
 ;;; examples
 
