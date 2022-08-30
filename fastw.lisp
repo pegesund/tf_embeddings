@@ -139,14 +139,17 @@
 	       (v1 (cadr e1))
 	       (re (cdr elements)))
 	  (loop for e in re
-		    do (let ((dist (euclid-distance (cadr e) v1)))
-			 (when (or (not best) (<= dist (caddr best)))
-			   (setf so-far-best (list w1 (car e) dist)))))
+		do (let* ((dist (euclid-distance (cadr e) v1))
+			  (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7)))
+			  )
+		     (print (list (car e) (car e1) score dist))
+		     (when (or (not best) (>= score (caddr best)))
+		       (setf so-far-best (list w1 (car e) score)))))
 	  (find-closest-pair re so-far-best))
       so-far-best)))
 	     
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 5))
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 10))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
@@ -164,13 +167,19 @@
 			    for v in vectors-only
 			    for w in words-no-dup
 			    ; do (print (format nil "Weight: ~a ~a" w tf-idf))
-			    collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
+			    collect (let* ((scale-factor (if (or
+							      (string= w (car best-pair))
+							      (string= w (cadr best-pair)))
+							     (caddr best-pair)
+							     1))							   
+					   (vector-scale (expt (+ 1 (* tf-idf scale-factor)) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
 					; (print (format nil "Weight: ~a" tf-idfs))
-    (print sorted-tf-and-vecs)
+					; (print sorted-tf-and-vecs)
+    (print "Best pair: ")
     (print best-pair)
     ; (print average-topscore)
     ; (print adjust-score)
