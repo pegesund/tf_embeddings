@@ -23,6 +23,9 @@
   )
 
 
+(defmethod lookup (tf s)
+  (gethash s (word-freq tf)))
+
 (defmethod add-string (h s)
   (let* ((words-raw (str:words (sb-unicode:lowercase s)))
 	 (words (loop for w in words-raw when (every #'alpha-char-p w) collect w)))
@@ -68,7 +71,7 @@
 	   ; (print (format nil "~a - ~f - ~f" word tf (/ (word-total h) in-total-doc)))
 	   (setf (gethash word res) computed-tfidf)))
     ; (print (format nil "------- Res: ~a" res))
-    res))
+    res)) 
 	 
 		       
 

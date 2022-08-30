@@ -6,6 +6,7 @@
 (defvar fast-vector-file "/home/petter/Nedlastinger/cc.no.300.vec")
 
 (defvar *fast-vectors* nil)
+(defvar *job-vectors* nil)
 (defvar large-tf nil)
 (defvar small-tf nil)
 (defparameter *max-vectors* 500000)
@@ -107,6 +108,7 @@
 (defun word-vectors-from-words(words hash)
    (loop for w in words collect (list w (gethash w hash))))
 
+
 (declaim (inline div-vector))
 (defun div-vector(v d &optional (size 300))
   "Divides vector by d ration, helper"
@@ -172,12 +174,23 @@
   (restore-vector "/data/lisp/vectors.txt")
   )
 
-(defun parse-file(f)  
+; makes l2 from blas vector
+(defun l2(v size)
+  (let* ((l2-sum (mgl-mat:nrm2 v))
+	 (l2-vec (div-vector v l2-sum size)))
+    l2-vec))
+
+(defun parse-file(f)
+  (setq *job-vectors*  (make-hash-table :test 'equal :synchronized T))
   (with-open-file (file f)
     (loop for i from 0
         for line = (read-line file nil nil)
         while line
-        do (tf-document-vector line *fast-vectors* large-tf small-tf 0.2 3))))
+	  do (let* ((wvector (tf-document-vector line *fast-vectors* large-tf small-tf 0.2 3))
+		    
+		    (key line))
+	       (when (> (length key) 50)
+		 (setf (gethash (subseq key 0 40) *job-vectors*) wvector)))))) 			   
   
 ;;; examples
 
@@ -186,3 +199,9 @@
 ; (find-closest-n (tf-document-vector "Jeg er flink i javascript og kan mye om frontend. Jeg er utdannet i Bergen på Vestlandet" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
 
 ; (find-closest-n (tf-document-vector "Jeg har jobbet som konditor og er flink til å bake kaker, kjeks og annet bakverk. På grunn av mitt finske opphav snakker jeg også finsk" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
+
+					; (find-closest-n (tf-document-vector "Jeg har drevet med oppdrett av fisk i flere år" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
+
+					; (find-closest-n (tf-document-vector "jeg er god på linux og scripting og har jobbet med drift" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
+
+;  (find-closest-n (tf-document-vector "jeg har erfaring som daglig leder" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
