@@ -128,8 +128,25 @@
     (div-vector vector-sum (length vectors-only) size)))
 
 
+; input in form (list word vector score)
+; best is on form (list w1 w2 score)
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 7))
+(defun find-closest-pair(elements best)
+  (let ((so-far-best best))
+    (if (>= (length elements) 2)
+	(let* ((e1 (car elements))
+	       (w1 (car e1))
+	       (v1 (cadr e1))
+	       (re (cdr elements)))
+	  (loop for e in re
+		    do (let ((dist (euclid-distance (cadr e) v1)))
+			 (when (or (not best) (<= dist (caddr best)))
+			   (setf so-far-best (list w1 (car e) dist)))))
+	  (find-closest-pair re so-far-best))
+      so-far-best)))
+	     
+
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 5))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
@@ -141,35 +158,21 @@
 	  (vectors-only (mapcar #'second vectors))
 	  (total 0)
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
-	  (sorted-tf-and-vecs (subseq (sort (mapcar #'list tf-idfs vectors) #'>  :key #'car) 0 topnn))
-	  (average-topscore (/ (reduce #'+ (mapcar #'car sorted-tf-and-vecs)) topn))
-	  (average-topvector (div-vector
-			      (sum-vectors (mapcar #'(lambda (x) (cadr (cadr x))) sorted-tf-and-vecs))
-			      topnn
-			      size
-			      ))
-	  (distance-to-center (mapcar #'(lambda (x) (cons
-		(caadr x)
-		(expt (+ 1 (euclid-distance average-topvector (cadr (cadr x)))) 20)
-		))
-				      sorted-tf-and-vecs))
-	  (min-distance-to-center (reduce #'min distance-to-center  :key #'cdr))
-	  (adjust-score (mapcar #'(lambda (x) (cons (car x) (/ (cdr x) min-distance-to-center))) distance-to-center))
+	  (sorted-tf-and-vecs (subseq (sort (mapcar #'list words-no-dup vectors-only tf-idfs) #'>  :key #'caddr) 0 topnn))
+	  (best-pair (find-closest-pair sorted-tf-and-vecs nil))
 	  (tf-vectors (loop for tf-idf in tf-idfs
 			    for v in vectors-only
 			    for w in words-no-dup
 			    ; do (print (format nil "Weight: ~a ~a" w tf-idf))
-			    collect (let* ((tf-adjusted  (/ tf-idf
-					(cdr (or (assoc w adjust-score :test #'string-equal) (cons 1 1)))))
-					   (vector-scale (expt (+ 1 tf-adjusted) tf-weight))
+			    collect (let* ((vector-scale (expt (+ 1 tf-idf) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
 					; (print (format nil "Weight: ~a" tf-idfs))
-    ; (print sorted-tf-and-vecs)
+    (print sorted-tf-and-vecs)
+    (print best-pair)
     ; (print average-topscore)
-    ; (print distance-to-center)
     ; (print adjust-score)
     (div-vector (sum-vectors tf-vectors) total size)))
 
