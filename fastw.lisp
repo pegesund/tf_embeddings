@@ -142,14 +142,14 @@
 		do (let* ((dist (euclid-distance (cadr e) v1))
 			  (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7)))
 			  )
-		     (print (list (car e) (car e1) score dist))
-		     (when (or (not best) (>= score (caddr best)))
+		     (when (< 0 score) (print (list (car e) (car e1) score dist)))
+		     (when (or (not so-far-best) (>= score (caddr so-far-best)))
 		       (setf so-far-best (list w1 (car e) score)))))
 	  (find-closest-pair re so-far-best))
       so-far-best)))
 	     
 
-(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 10))
+(defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 40))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
@@ -174,6 +174,7 @@
 							     1))							   
 					   (vector-scale (expt (+ 1 (* tf-idf scale-factor)) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
+				      (print (format nil "~a - ~a " w vector-scale))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
@@ -241,3 +242,13 @@
 					; (find-closest-n (tf-document-vector "jeg er god på linux og scripting og har jobbet med drift" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
 
 ;  (find-closest-n (tf-document-vector "jeg har erfaring som daglig leder" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
+
+
+;  (find-closest-n (tf-document-vector "jeg har utdannelse fra oslo i programmering med fokus på backend og algoritmer jeg er flink i java og kan litt net jeg har også vært systemutvikler når jeg gikk i lære" *fast-vectors* large-tf small-tf 0.2) *job-vectors* 10)
+
+
+					; (find-closest-n (tf-document-vector "olje og gass senior ingeniør elektro norconsult norconsult as er med sine ansatte norges største flerfaglige rådgiver rettet mot samfunnsplanlegging og prosjektering vi leverer tjenester nasjonalt og internasjonalt knyttet til bygg og eiendom energi industri miljø olje og gass samferdsel samfunnsplanlegging sikkerhet og vann og avløp selskapet som er ansatteid har hovedkontor i sandvika og mer enn andre kontorer i norge og i utlandet olje og gass senior ingeniør elektro norconsult søker nye senior ingeniører med bakgrunn fra olje og gassprosjekter vær med på å utforme norconsults olje og gassaktiviteter olje og gass er et definert hovedsatsingsområde innenfor norconsult vi er inne i en strategisk omleggingsfase og søker derfor etter flere dyktige ingeniører med fartstid innenfor olje og gassprosjekter norconsult olje og gass i norconsult er i rask vekst etter stor tilgang på prosjekter både på kontorene i sandvika og i larvik vårt hovedfokus er tidligfasestudier for installasjoner til havs og på land våre oppdragivere er større aktører innen primært oljeselskaper og energiselskaper nasjonalt og internasjonalt olje og gass avdelingene er også ansvarlig for utvikling av termisk energi som gasskraftanlegg i utlandet finansiert av world bank olje og gass miljøet arbeider med alle aspekter av aktiviteter knyttet til tjenester for olje og gassindustrien samt termisk industri våre satsningsområder er tidligfase studier for nye og gamle offshore installasjoner lpg lagring og transport samt å være rådgivende ingeniører i utbyggingsprosjekter felles for alle prosjektene er å være med og bidra til utvikling av miljøvennlige løsninger for olje og gass prosessering samt energiproduksjon vi skal være et konstruktivt bidrag til våre kunder for at de skal nå sine mål arbeidsoppgaver overordnet systemdesign av elkraft forsyningsanlegg i tidligfaseoppdrag med kostnadskalkyler teknisk ledelsesrådgivning og oppfølging av engineering kontraktorer på vegne av våre oppdragsgivere oppdragsledelse disiplinledelse ved detaljprosjektering i større tverrfaglige oppdrag oppfølging av epc kontrakter eller pakkeleveranser på vegne av oppdragsgivere tredjepartsverifikasjoner lede mc og commissioning aktiviteter i oppdrag ønskede kvalifikasjoner sivilingeniør ingeniør med god bakgrunn vil også komme i betraktning minimum års relevant erfaring god fremstillingsevne både på engelsk og norsk gode samarbeidsevner og evne til å dele kunnskap med andre arbeide selvstendig og som del av et team erfaring fra å jobbe som en del av operatørens prosjektteam vi tilbyr gode lønns og ansettelsesbetingelser store faglige utfordringer der du har mulighet til å kunne utvikle deg videre i spennende prosjekter sammen med dyktige medarbeidere godt arbeidsmiljø og godt sosialt miljø mulighet for utstasjonering fokus på kompetanse og personalutvikling kurs og opplæring studieturer ulike sosiale arrangementer idrettslag bedriftshytter mm innsendelse av søknad søknad med cv vitnemål og attester sendes via vårt elektroniske søknadsskjema på våre internettsider vi gjør oppmerksom på at det kun er elektroniske søknader som vil bli behandlet *li-nc send søknad fylke akershus søknadsfrist september tiltredelse etter avtale arbeidssted sandvika send søknad kontaktpersoner harald hesselberg" *fast-vectors* large-tf small-tf 0.2 3) *fast-vectors* 10)
+
+; (find-closest-n (tf-document-vector "marinbiolog" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
+
+; (find-closest-n (tf-document-vector "jeg er interessert i økonomi og har jobbet som eiendomsutvikler" *fast-vectors* large-tf small-tf 0.2 3) *job-vectors* 10)
