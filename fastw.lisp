@@ -128,25 +128,11 @@
     (div-vector vector-sum (length vectors-only) size)))
 
 
-; input in form (list word vector score)
-; best is on form (list w1 w2 score)
 
-(defun find-closest-pair(elements best)
-  (let ((so-far-best best))
-    (if (>= (length elements) 2)
-	(let* ((e1 (car elements))
-	       (w1 (car e1))
-	       (v1 (cadr e1))
-	       (re (cdr elements)))
-	  (loop for e in re
-		do (let* ((dist (euclid-distance (cadr e) v1))
-			  (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7)))
-			  )
-		     ; (when (< 0 score) (print (list (car e) (car e1) score dist)))
-		     (when (or (not so-far-best) (>= score (caddr so-far-best)))
-		       (setf so-far-best (list w1 (car e) score)))))
-	  (find-closest-pair re so-far-best))
-      so-far-best)))
+(defparameter no-words
+  (let ((h (make-hash-table :test 'equal)))
+    (mapcar #'(lambda (w) (setf (gethash w h) T)) '("bachelo" "høyskol" "univers" "utdanni" "masterg" "kvalifi" "http" "pensjon" "kvalifi" "persona" "oppstar" "bemanni" "arbeids" "compagn" "company" "kjønnss" "kompeta" "forsikr" "fylkesk" "etat" "alder" "etatens" "bemanni" "rekrutt" "addeco" "www" "stat" "statens" "kommune" "søkelis" "lønn" "søknad" "søknads" "none" "bransje" "søker" "merknad" "dyktig" "karriære" "stillin" ))
+    h))
 
 
 (defun find-all-distance-pairs(elements acc)
@@ -164,12 +150,31 @@
 	(find-all-distance-pairs re (append acc scores)))
       acc))
 
+
+(defun extract-top-best-pair-words(pairs topn)
+  (let ((h (make-hash-table :test 'equal)))
+    (labels ((add-word (word weight)
+	       (let ((short-word (str:substring 0 7 word)))
+		 (when (and (< (hash-table-count h) topn)
+			    (not (gethash short-word h))
+			    (not (gethash short-word no-words))
+			    )
+		   (setf (gethash short-word h) (list word weight))))))
+	     (loop for p in pairs
+		   do (add-word (car p) (caddr p))
+		      (add-word (cadr p) (caddr p))
+		   ))
+      h))
+	  
+	
+
 (defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 40))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
 			 tf-weight-p
 			 (+ 1 (max 1 (min 4 (* 0.03 (length words-all)))))))
-	  (words (loop for w in words-all when (gethash w hash) collect w))
+	  (words (loop for w in words-all when (and (gethash w hash)
+						    (not (gethash (str:substring 0 7 w) no-words))) collect w))
 	  (words-no-dup (remove-if-not #'(lambda (x) (lookup tf-large x))   (remove-duplicates words :test #'equal)))
 	  (topnn (min topn (length words-no-dup))) 
 	  (vectors (word-vectors-from-words words-no-dup hash))
@@ -177,12 +182,12 @@
 	  (total 0)
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
 	  (sorted-tf-and-vecs (subseq (sort (mapcar #'list words-no-dup vectors-only tf-idfs) #'>  :key #'caddr) 0 topnn))
-	  (best-pair (find-closest-pair sorted-tf-and-vecs nil))
 	  (all-pairs (sort (find-all-distance-pairs sorted-tf-and-vecs '()) #'> :key #'caddr))
+	  (best-pair (car all-pairs))
 	  (tf-vectors (loop for tf-idf in tf-idfs
 			    for v in vectors-only
 			    for w in words-no-dup
-			    do (print (format nil "Weight: ~a ~a" w tf-idf))
+			    ; do (print (format nil "Weight: ~a ~a" w tf-idf))
 			    collect (let* ((scale-factor (if (or
 							      (string= w (car best-pair))
 							      (string= w (cadr best-pair)))
@@ -190,15 +195,16 @@
 							     1))							   
 					   (vector-scale (expt (+ 1 (* tf-idf scale-factor)) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
-				      (print (format nil "~a - ~a " w vector-scale))
+				      ; (print (format nil "~a - ~a " w vector-scale))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
 					; (print (format nil "Weight: ~a" tf-idfs))
 					; (print sorted-tf-and-vecs)
-    (print "Best pair: ")
-    (print best-pair)
-    (print all-pairs)
+    ; (print "Best pair: ")
+    ; (print best-pair)
+    ; (print all-pairs)
+    (print (alexandria:hash-table-values (extract-top-best-pair-words all-pairs 10)))
     ; (print average-topscore)
     ; (print adjust-score)
     (div-vector (sum-vectors tf-vectors) total size)))
