@@ -142,12 +142,27 @@
 		do (let* ((dist (euclid-distance (cadr e) v1))
 			  (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7)))
 			  )
-		     (when (< 0 score) (print (list (car e) (car e1) score dist)))
+		     ; (when (< 0 score) (print (list (car e) (car e1) score dist)))
 		     (when (or (not so-far-best) (>= score (caddr so-far-best)))
 		       (setf so-far-best (list w1 (car e) score)))))
 	  (find-closest-pair re so-far-best))
       so-far-best)))
-	     
+
+
+(defun find-all-distance-pairs(elements acc)
+  (if (> (length elements) 1)
+      (let* ((e1 (car elements))
+	     (w1 (car e1))
+	     (v1 (cadr e1))
+	     (re (cdr elements))
+	     (scores 
+	       (loop for e in re
+		     collect (let* ((dist (euclid-distance (cadr e) v1))
+				    (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7))))
+			       (list w1 (car e) score dist)
+			       ))))
+	(find-all-distance-pairs re (append acc scores)))
+      acc))
 
 (defun tf-document-vector(sentence hash tf-large tf-small &optional (weight 1) (tf-weight-p 0) (size 300) (topn 40))
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
@@ -163,14 +178,15 @@
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
 	  (sorted-tf-and-vecs (subseq (sort (mapcar #'list words-no-dup vectors-only tf-idfs) #'>  :key #'caddr) 0 topnn))
 	  (best-pair (find-closest-pair sorted-tf-and-vecs nil))
+	  (all-pairs (sort (find-all-distance-pairs sorted-tf-and-vecs '()) #'> :key #'caddr))
 	  (tf-vectors (loop for tf-idf in tf-idfs
 			    for v in vectors-only
 			    for w in words-no-dup
-			    ; do (print (format nil "Weight: ~a ~a" w tf-idf))
+			    do (print (format nil "Weight: ~a ~a" w tf-idf))
 			    collect (let* ((scale-factor (if (or
 							      (string= w (car best-pair))
 							      (string= w (cadr best-pair)))
-							     (caddr best-pair)
+							     (min 3 (caddr best-pair))
 							     1))							   
 					   (vector-scale (expt (+ 1 (* tf-idf scale-factor)) tf-weight))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
@@ -182,6 +198,7 @@
 					; (print sorted-tf-and-vecs)
     (print "Best pair: ")
     (print best-pair)
+    (print all-pairs)
     ; (print average-topscore)
     ; (print adjust-score)
     (div-vector (sum-vectors tf-vectors) total size)))
@@ -210,6 +227,11 @@
   (setf small-tf (load-tf "/data/lisp/small_tf.txt"))
   (restore-vector "/data/lisp/vectors.txt")
   )
+
+
+(defun edist (w1 w2)
+  (euclid-distance (gethash w1 *fast-vectors*) (gethash w2 *fast-vectors*)))
+       
 
 ; makes l2 from blas vector
 (defun l2(v size)
