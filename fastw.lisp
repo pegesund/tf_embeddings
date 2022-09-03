@@ -131,7 +131,7 @@
 
 (defparameter no-words
   (let ((h (make-hash-table :test 'equal)))
-    (mapcar #'(lambda (w) (setf (gethash w h) T)) '("bachelo" "høyskol" "univers" "utdanni" "masterg" "kvalifi" "http" "pensjon" "kvalifi" "persona" "oppstar" "bemanni" "arbeids" "compagn" "company" "kjønnss" "kompeta" "forsikr" "fylkesk" "etat" "alder" "etatens" "bemanni" "rekrutt" "addeco" "www" "stat" "statens" "kommune" "søkelis" "lønn" "søknad" "søknads" "none" "bransje" "søker" "merknad" "dyktig" "karriære" "stillin" "kontorp" "og" "in" "as" "com" "søkere" "søker" "for" "id" "oss" "stillin" "ved" "søkeren" "and" "snarest" "som" "attest" "atteste" "kopi" "samarbe" "cand" "kan" "til" "kopier" "cv" "post" "postadr" "hos" "ved" "karriær" "uio" "uib" "ntnu" "søkjar" "oppgave" "oppgåve" "skriftl" "daglig" "tlf" "lønn" "lønnsbe" "nov" "des" "jan" "feb" "mar" "mai" "jul" "jun" "enhet" "mob" "mobil" "avd" "egne" "ønskel" "erfarin" "erfaren" "tilby" "tilbyr" "selvgåe" "innen" "karrier" "struktu" "ledig" "ledige" "viktig" "viktigh" "lagspil" "innsats" "fremtid" "uformel" "kommuni" "etc" "utfordr" "praktis" "ønskede" "relevant"))
+    (mapcar #'(lambda (w) (setf (gethash w h) T)) '("bachelo" "høyskol" "univers" "utdanni" "masterg" "kvalifi" "http" "pensjon" "kvalifi" "persona" "oppstar" "bemanni" "arbeids" "compagn" "company" "kjønnss" "kompeta" "forsikr" "fylkesk" "etat" "alder" "etatens" "bemanni" "rekrutt" "addeco" "www" "stat" "statens" "kommune" "søkelis" "lønn" "søknad" "søknads" "none" "bransje" "søker" "merknad" "dyktig" "karriære" "stillin" "kontorp" "og" "in" "as" "com" "søkere" "søker" "for" "id" "oss" "stillin" "ved" "søkeren" "and" "snarest" "som" "attest" "atteste" "kopi" "samarbe" "cand" "kan" "til" "kopier" "cv" "post" "postadr" "hos" "ved" "karriær" "uio" "uib" "ntnu" "søkjar" "oppgave" "oppgåve" "skriftl" "daglig" "tlf" "lønn" "lønnsbe" "nov" "des" "jan" "feb" "mar" "mai" "jul" "jun" "enhet" "mob" "mobil" "avd" "egne" "ønskel" "erfarin" "erfaren" "tilby" "tilbyr" "selvgåe" "innen" "karrier" "struktu" "ledig" "ledige" "viktig" "viktigh" "lagspil" "innsats" "fremtid" "uformel" "kommuni" "etc" "utfordr" "praktis" "ønskede" "relevan" "med" "eks" "tilbyr" "tilby" "effekti" "mest" "mulig" "jobbe" "ansatt" "ansatte" "ref" "viser" "vises" "utdanne" "egenska" "løsning" "kontor" "hovedk" "fleksib" "ansvar" "ansvars" "engasje" "gode" "god" "engasje" "kontakt" "muntlig" "skrifli" "gjennomf" "manglend" "nøyakti" "sterk" "sterker" "av" "på" "stor" "størst" "utadret" "fleksib" "kjønn" "mulighe" "varighe" "pågangs" "resulta""selvste" "sjølvst" "beskriv" "lønnsre" "nøyakti" "gode" "spesifi" "spesiel" "faglig" "faglige" "kandida" "medarbe" "du" "flink" "over" "etter" "partner" "partnere" "sammen" "oppdrag" "fagområ" "spesifi" "vår" "våre" "henhold" "kvalite" "fast" "vikar" "virksomh" "uredd" "etter" "nye" "flere" "untat" "inkl" "samt" "fremove" "være" "vært" "blant" "tilsett" "kampanj" "herunde" "inneha" "engasje" "etabler" "faglig" "faglige" "nøyakti" "betinge" "dynamis" "proakti" "disse" "krevend" "følgend" "pådrive" "omfatte" "kapasit" "behov" "søkers" "mulig" "mulige" "plan" "planen" "personl" "no" "mangfol" "mangfal" "innenfo" "stress" "stressen" "alle" "samtlige" "meir" "mer" "sentral" "sentrale" "lignend" "bistå" "region" "glede" "selvfølg" "osv" "høye" "avanser" "dyktig" "dyktige" "utlysing" "hyggelig" "av" "flere" "fler" "våre" "kontrak" "godkjen" "regulat" "oppegåe" "største" "oppnå" "deg"))
     h))
 
 
@@ -166,7 +166,8 @@
 		   ))
       h))
 	  
-	
+
+
 
 (defun tf-document-vector(sentence hash tf-large tf-small
 			  &optional
@@ -178,7 +179,7 @@
 			 (+ 1 (max 1 (min 4 (* 0.03 (length words-all)))))))
 	  (words-tmp (loop for w in words-all when (and (gethash w hash)
 						    (not (gethash (str:substring 0 7 w) no-words))
-						    (< 1 (length w))
+						    (< 2 (length w))
 						    ) collect w))
 	  (words (if (> (length words-tmp) 40) (butlast words-tmp 12) words-tmp))
 	  (words-no-dup (remove-if-not #'(lambda (x) (lookup tf-large x))   (remove-duplicates words :test #'equal)))
