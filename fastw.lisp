@@ -150,20 +150,27 @@
 	(find-all-distance-pairs re (append acc scores)))
       acc))
 
-
+					; iterates over the words
+					; no words takes it neightbour with it more than twice
 (defun extract-top-best-pair-words(pairs topn)
-  (let ((h (make-hash-table :test 'equal)))
-    (labels ((add-word (word weight)
-	       (let ((short-word (str:substring 0 7 word)))
+  (let ((h (make-hash-table :test 'equal))
+	(from-pair-h (make-hash-table :test 'equal)))
+    (labels ((add-word (word weight pair-word)
+	       (let ((short-word (str:substring 0 7 word))
+		     (short-word-p (str:substring 0 7 pair-word))
+		     )
 		 (when (and (< (hash-table-count h) topn)
 			    (not (gethash short-word h))
 			    (not (gethash short-word no-words))
+			    (> 2 (gethash short-word-p from-pair-h 0))
 			    )
+		   (incf (gethash short-word-p from-pair-h 0))
 		   (setf (gethash short-word h) (list word weight))))))
 	     (loop for p in pairs
-		   do (add-word (car p) (caddr p))
-		      (add-word (cadr p) (caddr p))
+		   do (add-word (car p) (caddr p) (cadr p))
+		      (add-word (cadr p) (caddr p) (car p))
 		   ))
+    (inspect from-pair-h)
       h))
 	  
 
@@ -188,48 +195,43 @@
 	  (topnn (min topn (length words-no-dup))) 
 	  (vectors (word-vectors-from-words words-no-dup hash))	  
 	  (vectors-only (mapcar #'second vectors))
-	  (total 0)
+	  (early-step (/ early-f early-w))
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
+	  (vector-scales (loop for tf-idf in tf-idfs
+			       for i from 0.0
+			       collect (let ((early-s (if (<= i early-w) (* early-step (- early-w i)) 1.0)))
+					 (* early-s (expt (+ 1 tf-idf) tf-weight)))))
 	  (sorted-tf-and-vecs (subseq
-			       (sort (mapcar #'list words-no-dup vectors-only tf-idfs) #'>  :key #'caddr)
+			       (sort (mapcar #'list words-no-dup vectors-only vector-scales) #'>  :key #'caddr)
 			       0 (min (length words-no-dup) (* 1 topnn))))
 	  (all-pairs (sort (find-all-distance-pairs sorted-tf-and-vecs '()) #'> :key #'caddr))
-	  (best-pair (car all-pairs))
-	  (early-step (/ early-f early-w))
-	  (tf-vectors (loop for tf-idf in tf-idfs
+	  (tf-vectors (loop for vector-scale in vector-scales
 			    for v in vectors-only
-			    for w in words-no-dup
-			    for i from 0.0
 			    ; do (print (format nil "Weight: ~a ~a ~a " w tf-idf i))
-			    collect (let* ((scale-factor (if (or
-							      (string= w (car best-pair))
-							      (string= w (cadr best-pair)))
-							     (min 3 (caddr best-pair))
-							     1))
-					   (early-s (if (<= i early-w) (* early-step (- early-w i)) 1.0))
-					   (vector-scale (* early-s (expt (+ 1 (* tf-idf scale-factor)) tf-weight)))
-					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
-				      (print (format nil "~a - ~a  ~a " w vector-scale early-s))
-				      (incf total vector-scale)
+			    collect (let* ((mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
+					; (print (format nil "~a - ~a  ~a " w vector-scale early-s))
 				      (mgl-mat:.*! v mul-vec)
-				      mul-vec))))
+				      mul-vec)))
+	  (best-words-and-scoring (alexandria:hash-table-values (extract-top-best-pair-words all-pairs 20)))
+	  (aggregated-vector  (if tf-vectors
+				  (div-vector (sum-vectors tf-vectors) (apply #'+ vector-scales) size)
+				  nil
+				  ))
+	  )
+    
 					; (print (format nil "Weight: ~a" tf-idfs))
 					; (print sorted-tf-and-vecs)
-    ; (print "Best pair: ")
-					; (print best-pair)
     ; (print sentence)
     ; (print words-all)
     ; (print words-tmp)
     ; (print words)
     ; (print words-no-dup)
     (print all-pairs)
-    (print (alexandria:hash-table-values (extract-top-best-pair-words all-pairs 20)))
+    (print best-words-and-scoring)
     ; (print average-topscore)
 					; (print adjust-score)
-    (if tf-vectors
-	(div-vector (sum-vectors tf-vectors) total size)
-	nil
-	)))
+    aggregated-vector
+	))
 
 
 
