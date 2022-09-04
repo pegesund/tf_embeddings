@@ -131,7 +131,7 @@
 
 (defparameter no-words
   (let ((h (make-hash-table :test 'equal)))
-    (mapcar #'(lambda (w) (setf (gethash w h) T)) '("bachelo" "høyskol" "univers" "utdanni" "masterg" "kvalifi" "http" "pensjon" "kvalifi" "persona" "oppstar" "bemanni" "arbeids" "compagn" "company" "kjønnss" "kompeta" "forsikr" "fylkesk" "etat" "alder" "etatens" "bemanni" "rekrutt" "addeco" "www" "stat" "statens" "kommune" "søkelis" "lønn" "søknad" "søknads" "none" "bransje" "søker" "merknad" "dyktig" "karriære" "stillin" "kontorp" "og" "in" "as" "com" "søkere" "søker" "for" "id" "oss" "stillin" "ved" "søkeren" "and" "snarest" "som" "attest" "atteste" "kopi" "samarbe" "cand" "kan" "til" "kopier" "cv" "post" "postadr" "hos" "ved" "karriær" "uio" "uib" "ntnu" "søkjar" "oppgave" "oppgåve" "skriftl" "daglig" "tlf" "lønn" "lønnsbe" "nov" "des" "jan" "feb" "mar" "mai" "jul" "jun" "enhet" "mob" "mobil" "avd" "egne" "ønskel" "erfarin" "erfaren" "tilby" "tilbyr" "selvgåe" "innen" "karrier" "struktu" "ledig" "ledige" "viktig" "viktigh" "lagspil" "innsats" "fremtid" "uformel" "kommuni" "etc" "utfordr" "praktis" "ønskede" "relevan" "med" "eks" "tilbyr" "tilby" "effekti" "mest" "mulig" "jobbe" "ansatt" "ansatte" "ref" "viser" "vises" "utdanne" "egenska" "løsning" "kontor" "hovedk" "fleksib" "ansvar" "ansvars" "engasje" "gode" "god" "engasje" "kontakt" "muntlig" "skrifli" "gjennomf" "manglend" "nøyakti" "sterk" "sterker" "av" "på" "stor" "størst" "utadret" "fleksib" "kjønn" "mulighe" "varighe" "pågangs" "resulta""selvste" "sjølvst" "beskriv" "lønnsre" "nøyakti" "gode" "spesifi" "spesiel" "faglig" "faglige" "kandida" "medarbe" "du" "flink" "over" "etter" "partner" "partnere" "sammen" "oppdrag" "fagområ" "spesifi" "vår" "våre" "henhold" "kvalite" "fast" "vikar" "virksomh" "uredd" "etter" "nye" "flere" "untat" "inkl" "samt" "fremove" "være" "vært" "blant" "tilsett" "kampanj" "herunde" "inneha" "engasje" "etabler" "faglig" "faglige" "nøyakti" "betinge" "dynamis" "proakti" "disse" "krevend" "følgend" "pådrive" "omfatte" "kapasit" "behov" "søkers" "mulig" "mulige" "plan" "planen" "personl" "no" "mangfol" "mangfal" "innenfo" "stress" "stressen" "alle" "samtlige" "meir" "mer" "sentral" "sentrale" "lignend" "bistå" "region" "glede" "selvfølg" "osv" "høye" "avanser" "dyktig" "dyktige" "utlysing" "hyggelig" "av" "flere" "fler" "våre" "kontrak" "godkjen" "regulat" "oppegåe" "største" "oppnå" "deg" "bidra" "generel" "trives" "forbedr" "ulike" "selv" "minimum" "lange" "korte" "viktig" "virksom" "fagkunn" "kunnska" "konsern" "forbedr" "utadve" "lønnes" "søkerli" "ikt" "arbeid" "oslo" "bergen" "norge" "problem" "komplek" )) 
+    (mapcar #'(lambda (w) (setf (gethash w h) T)) '("bachelo" "høyskol" "univers" "utdanni" "masterg" "kvalifi" "http" "pensjon" "kvalifi" "persona" "oppstar" "bemanni" "arbeids" "compagn" "company" "kjønnss" "kompeta" "forsikr" "fylkesk" "etat" "alder" "etatens" "bemanni" "rekrutt" "addeco" "www" "stat" "statens" "kommune" "søkelis" "lønn" "søknad" "søknads" "none" "bransje" "søker" "merknad" "dyktig" "karriære" "stillin" "kontorp" "og" "in" "as" "com" "søkere" "søker" "for" "id" "oss" "stillin" "ved" "søkeren" "and" "snarest" "som" "attest" "atteste" "kopi" "samarbe" "cand" "kan" "til" "kopier" "cv" "post" "postadr" "hos" "ved" "karriær" "uio" "uib" "ntnu" "søkjar" "oppgave" "oppgåve" "skriftl" "daglig" "tlf" "lønn" "lønnsbe" "nov" "des" "jan" "feb" "mar" "mai" "jul" "jun" "enhet" "mob" "mobil" "avd" "egne" "ønskel" "erfarin" "erfaren" "tilby" "tilbyr" "selvgåe" "innen" "karrier" "struktu" "ledig" "ledige" "viktig" "viktigh" "lagspil" "innsats" "fremtid" "uformel" "kommuni" "etc" "utfordr" "praktis" "ønskede" "relevan" "med" "eks" "tilbyr" "tilby" "effekti" "mest" "mulig" "jobbe" "ansatt" "ansatte" "ref" "viser" "vises" "utdanne" "egenska" "løsning" "kontor" "hovedk" "fleksib" "ansvar" "ansvars" "engasje" "gode" "god" "engasje" "kontakt" "muntlig" "skrifli" "gjennomf" "manglend" "nøyakti" "sterk" "sterker" "av" "på" "stor" "størst" "utadret" "fleksib" "kjønn" "mulighe" "varighe" "pågangs" "resulta""selvste" "sjølvst" "beskriv" "lønnsre" "nøyakti" "gode" "spesifi" "spesiel" "faglig" "faglige" "kandida" "medarbe" "du" "flink" "over" "etter" "partner" "partnere" "sammen" "oppdrag" "fagområ" "spesifi" "vår" "våre" "henhold" "kvalite" "fast" "vikar" "virksomh" "uredd" "etter" "nye" "flere" "untat" "inkl" "samt" "fremove" "være" "vært" "blant" "tilsett" "kampanj" "herunde" "inneha" "engasje" "etabler" "faglig" "faglige" "nøyakti" "betinge" "dynamis" "proakti" "disse" "krevend" "følgend" "pådrive" "omfatte" "kapasit" "behov" "søkers" "mulig" "mulige" "plan" "planen" "personl" "no" "mangfol" "mangfal" "innenfo" "stress" "stressen" "alle" "samtlige" "meir" "mer" "sentral" "sentrale" "lignend" "bistå" "region" "glede" "selvfølg" "osv" "høye" "avanser" "dyktig" "dyktige" "utlysing" "hyggelig" "av" "flere" "fler" "våre" "kontrak" "godkjen" "regulat" "oppegåe" "største" "oppnå" "deg" "bidra" "generel" "trives" "forbedr" "ulike" "selv" "minimum" "lange" "korte" "viktig" "virksom" "fagkunn" "kunnska" "konsern" "forbedr" "utadve" "lønnes" "søkerli" "ikt" "arbeid" "oslo" "bergen" "norge" "problem" "komplek" "masters" "reisevi" "sommerjo" "kunders" "fremsti" "munnleg" "trives" "trivast" "muntlig" "søkje" "mangle" "manglen" "manglan" "søkjar" "søkjare" "spennen" "spanand" "utvikli" "rollen" "rollen" "stort" "forutse" "ungt" "eie" "eiere" "kreves" "erfaren" "norsk" "bestå" "består" "elles" "sørge" "komfort" "bra" "ordnede" "kontor" "kontore" "styrke" "interes" "annonse" "vennlig" "tidsrom" "fullfør" "tiltred" "høgskol" "fullsten" "fra" "vil" "nødvend" "fleksit" "forstå" "forståe" "behersk"  "lokaler" "variert" "varierte" "den" )) 
     h))
 
 
@@ -144,7 +144,7 @@
 	     (scores 
 	       (loop for e in re
 		     collect (let* ((dist (euclid-distance (cadr e) v1))
-				    (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7))))
+				    (score (* (- 2 dist) (expt (+ (caddr e) (caddr e1)) 0.7))))			       
 			       (list w1 (car e) score dist)
 			       ))))
 	(find-all-distance-pairs re (append acc scores)))
@@ -172,7 +172,7 @@
 
 (defun tf-document-vector(sentence hash tf-large tf-small
 			  &optional
-			    (weight 1) (tf-weight-p 0) (size 300) (topn 40) (early-f 2.0) (early-w 6.0)
+			    (weight 1) (tf-weight-p 0) (size 300) (topn 40) (early-f 5.0) (early-w 6.0)
 			    )
   (let*  ((words-all (str:words (str:remove-punctuation (sb-unicode:lowercase sentence))))
 	  (tf-weight (if (> tf-weight-p 0)
@@ -192,7 +192,7 @@
 	  (tf-idfs (combined-tf-idfs words-all words-no-dup tf-large tf-small weight))
 	  (sorted-tf-and-vecs (subseq
 			       (sort (mapcar #'list words-no-dup vectors-only tf-idfs) #'>  :key #'caddr)
-			       0 (* 2 topnn)))
+			       0 (min (length words-no-dup) (* 1 topnn))))
 	  (all-pairs (sort (find-all-distance-pairs sorted-tf-and-vecs '()) #'> :key #'caddr))
 	  (best-pair (car all-pairs))
 	  (early-step (/ early-f early-w))
@@ -200,7 +200,7 @@
 			    for v in vectors-only
 			    for w in words-no-dup
 			    for i from 0.0
-			    do (print (format nil "Weight: ~a ~a ~a " w tf-idf i))
+			    ; do (print (format nil "Weight: ~a ~a ~a " w tf-idf i))
 			    collect (let* ((scale-factor (if (or
 							      (string= w (car best-pair))
 							      (string= w (cadr best-pair)))
@@ -209,7 +209,7 @@
 					   (early-s (if (<= i early-w) (* early-step (- early-w i)) 1.0))
 					   (vector-scale (* early-s (expt (+ 1 (* tf-idf scale-factor)) tf-weight)))
 					   (mul-vec (mgl-mat:make-mat (list 1 size) :ctype :float :initial-element vector-scale)))
-				      ; (print (format nil "~a - ~a " w vector-scale))
+				      (print (format nil "~a - ~a  ~a " w vector-scale early-s))
 				      (incf total vector-scale)
 				      (mgl-mat:.*! v mul-vec)
 				      mul-vec))))
@@ -217,13 +217,13 @@
 					; (print sorted-tf-and-vecs)
     ; (print "Best pair: ")
 					; (print best-pair)
-    (print sentence)
-    (print words-all)
-    (print words-tmp)
-    (print words)
-    (print words-no-dup)
-    ; (print all-pairs)
-    (print (alexandria:hash-table-values (extract-top-best-pair-words all-pairs 30))
+    ; (print sentence)
+    ; (print words-all)
+    ; (print words-tmp)
+    ; (print words)
+    ; (print words-no-dup)
+    (print all-pairs)
+    (print (alexandria:hash-table-values (extract-top-best-pair-words all-pairs 20)))
     ; (print average-topscore)
 					; (print adjust-score)
     (if tf-vectors
