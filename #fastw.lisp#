@@ -167,7 +167,8 @@
       h))
 	  
 
-
+(defun adjust-for-best-pairs(words vectors pairs &optional (weitht 1))
+  (
 
 (defun tf-document-vector(sentence hash tf-large tf-small
 			  &optional
@@ -182,7 +183,8 @@
 						    (< 2 (length w))
 						    ) collect w))
 	  (words (if (> (length words-tmp) 400000) (butlast words-tmp 12) words-tmp))
-	  (words-no-dup (remove-if-not #'(lambda (x) (lookup tf-large x))   (remove-duplicates words :test #'equal :from-end T)))
+	  (words-no-dup (remove-if-not #'(lambda (x) (lookup tf-large x))
+				       (remove-duplicates words :test #'equal :from-end T)))
 	  (topnn (min topn (length words-no-dup))) 
 	  (vectors (word-vectors-from-words words-no-dup hash))	  
 	  (vectors-only (mapcar #'second vectors))
